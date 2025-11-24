@@ -1,0 +1,14 @@
+[project]
+name = "jax-neural-ode"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "jax>=0.8.1",
+    "jaxlib>=0.8.1",
+    "matplotlib>=3.10.7",
+    "numpy>=2.3.5",
+    "optax>=0.2.6",
+    "tqdm>=4.67.1",
+]
