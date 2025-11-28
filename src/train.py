@@ -170,4 +170,67 @@ def main():
 
     # Load dataset
     X, y = load_lorenz_dataset("data/lorenz_dataset.npy")
-    steps = X.sh
+    steps = X.shape[1]       # T = 1000
+    dt = 0.01                # same as we used in data generation
+
+    key = jax.random.PRNGKey(0)
+    key_split, key_data = jax.random.split(key)
+
+    X_train, y_train, X_val, y_val = train_val_split(X, y, val_frac=0.2, key=key_data)
+
+    # Initialize model
+    key_model = key_split
+    params = init_model_params(
+        key_model,
+        state_dim=3,
+        hidden_dims=(64, 64),
+        num_classes=2,
+    )
+
+    # Optimizer
+    optimizer = optax.adam(lr)
+    opt_state = optimizer.init(params)
+
+    train_step = make_train_step(optimizer, dt, steps, traj_weight=traj_weight)
+
+    print("Start training...")
+    print(f"Train size: {X_train.shape[0]}, Val size: {X_val.shape[0]}")
+    start_time = time.time()
+
+    for epoch in range(1, num_epochs + 1):
+        # Shuffle per epoch
+        key, key_epoch = jax.random.split(key)
+        epoch_metrics = {"loss": 0.0, "ce_loss": 0.0, "traj_mse": 0.0, "acc": 0.0}
+        count = 0
+
+        for X_batch, y_batch in batch_iter(X_train, y_train, batch_size, key_epoch):
+            params, opt_state, metrics = train_step(params, opt_state, X_batch, y_batch)
+
+            bs = X_batch.shape[0]
+            for k in epoch_metrics:
+                epoch_metrics[k] += float(metrics[k]) * bs
+            count += bs
+
+        # Normalize epoch metrics
+        for k in epoch_metrics:
+            epoch_metrics[k] /= count
+
+        # Validation
+        val_ce, val_acc = evaluate(params, X_val, y_val, dt, steps, batch_size=32)
+
+        elapsed = time.time() - start_time
+        print(
+            f"[Epoch {epoch:03d}] "
+            f"loss={epoch_metrics['loss']:.4f} | "
+            f"ce={epoch_metrics['ce_loss']:.4f} | "
+            f"traj_mse={epoch_metrics['traj_mse']:.4f} | "
+            f"acc={epoch_metrics['acc']:.4f} | "
+            f"val_ce={val_ce:.4f} | val_acc={val_acc:.4f} | "
+            f"time={elapsed:.1f}s"
+        )
+
+    print("Training finished.")
+
+
+if __name__ == "__main__":
+    main()
