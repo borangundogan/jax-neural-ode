@@ -167,7 +167,7 @@ def main():
     batch_size = 32
     num_epochs = 50
     lr = 1e-3
-    # traj_weight = 0.1
+    traj_weight = 0.1
 
     # Load dataset
     X, y = load_lorenz_dataset("data/lorenz_dataset.npy")
