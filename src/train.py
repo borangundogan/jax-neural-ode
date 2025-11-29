@@ -95,8 +95,9 @@ def loss_fn(
     traj_true = X_batch  # (B, T, 3)
     traj_mse = jnp.mean((traj_pred - traj_true) ** 2)
 
-    total_loss = ce_loss + traj_weight * traj_mse
-
+    # total_loss = ce_loss + traj_weight * traj_mse
+    total_loss = ce_loss
+    
     # Accuracy for logging
     preds = jnp.argmax(logits, axis=-1)
     acc = jnp.mean(preds == y_batch)
@@ -166,7 +167,7 @@ def main():
     batch_size = 32
     num_epochs = 50
     lr = 1e-3
-    traj_weight = 0.1
+    # traj_weight = 0.1
 
     # Load dataset
     X, y = load_lorenz_dataset("data/lorenz_dataset.npy")

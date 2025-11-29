@@ -2,7 +2,7 @@ import jax
 import jax.numpy as jnp
 from typing import List, Dict, NamedTuple
 
-from .solver import integrate_ode
+from solver import integrate_ode
 
 
 # ---------- Basic MLP helpers ----------
